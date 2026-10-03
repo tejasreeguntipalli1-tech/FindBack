@@ -12,6 +12,7 @@ echo "========================================================\n";
 echo "   CAMPUSFIND ADVANCED E2E VERIFICATION TEST SUITE     \n";
 echo "========================================================\n\n";
 
+$testBaseUrl = getenv('APP_URL') ?: 'http://localhost:8000';
 $passCount = 0;
 $totalTests = 0;
 
@@ -96,8 +97,8 @@ $stmt = $pdo->prepare("INSERT INTO reports (user_id, type, category_id, title, d
 $stmt->execute();
 $testDupReportId = $pdo->lastInsertId();
 
-// Test the live API endpoint http://localhost:8000/api/check_duplicate.php via GET
-$dupUrl = 'http://localhost:8000/api/check_duplicate.php?' . http_build_query([
+// Test the live API endpoint via GET
+$dupUrl = "{$testBaseUrl}/api/check_duplicate.php?" . http_build_query([
     'title' => 'Dell Inspiron 15 Charger',
     'category_id' => 1,
     'type' => 'lost',
@@ -160,7 +161,7 @@ $latestNotif = $pdo->query("SELECT * FROM notifications WHERE user_id = 2 ORDER 
 assert_test((int)$latestNotif['related_report_id'] === 1, "related_report_id column properly populated", "Value: {$latestNotif['related_report_id']}");
 
 // Test live notification polling endpoint
-$pollResponse = @file_get_contents('http://localhost:8000/api/notifications_poll.php?last_id=0');
+$pollResponse = @file_get_contents("{$testBaseUrl}/api/notifications_poll.php?last_id=0");
 $pollJson = json_decode($pollResponse, true);
 assert_test($pollJson !== null, "api/notifications_poll.php returns valid JSON structure");
 
@@ -179,7 +180,7 @@ $pdo->prepare("DELETE FROM notifications WHERE id = ?")->execute([$latestNotif['
 echo "\n--- PRIORITY 5: Analytics & Metrics Integrity ---\n";
 
 // Execute HTTP request to live endpoint
-$analyticsJson = @file_get_contents('http://localhost:8000/api/analytics_data.php');
+$analyticsJson = @file_get_contents("{$testBaseUrl}/api/analytics_data.php");
 $analytics = json_decode($analyticsJson, true);
 
 assert_test($analytics !== null && isset($analytics['kpi']), "api/analytics_data.php returns valid JSON payload");

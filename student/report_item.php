@@ -56,14 +56,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mime = finfo_file($finfo, $file['tmp_name']);
             finfo_close($finfo);
 
-            if (!in_array($mime, $allowedMimes)) {
-                $error = 'Only JPG, PNG, and WebP images are permitted.';
+            $allowedExts = ['jpg', 'jpeg', 'png', 'webp'];
+            $rawExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+
+            if (!in_array($mime, $allowedMimes) || !in_array($rawExt, $allowedExts)) {
+                $error = 'Only genuine JPG, JPEG, PNG, and WebP images are permitted.';
             } elseif ($file['size'] > $maxSize) {
                 $error = 'Image file size must not exceed 5MB.';
             } else {
-                $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-                if (!$ext) $ext = 'jpg';
-                $newFilename = 'item_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . strtolower($ext);
+                $newFilename = 'item_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $rawExt;
                 $uploadDir = __DIR__ . '/../uploads/';
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0755, true);
@@ -72,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (move_uploaded_file($file['tmp_name'], $destination)) {
                     $imagePath = 'uploads/' . $newFilename;
                 } else {
-                    $error = 'Failed to safely upload the item image. Please try again.';
+                    $error = 'Failed to safely upload the item image. Please verify directory permissions.';
                 }
             }
         }

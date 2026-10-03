@@ -33,6 +33,7 @@ yarn-error.log*
 # User-generated uploads (keep folder structure intact via .gitkeep)
 uploads/*
 !uploads/.gitkeep
+!uploads/.htaccess
 !uploads/items/
 uploads/items/*
 !uploads/items/.gitkeep
